@@ -57,21 +57,18 @@ WORKDIR /home/$systemUser/$benchFolderName
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN echo "-> Install nginx & supervisor" \
-    # apt-get update
     && apt-get update \
-    && apt-get install -y \
-    # nginx for serving files
-    nginx \
-    # supervisor to run multiple server per container
-    supervisor \
+    && apt-get install -y nginx supervisor \
     && echo "-> Cleaning installation" \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && echo "-> Remove nginx default site" \
     && rm /etc/nginx/sites-enabled/default \
+    && echo "-> Install HRMS" \
+    && su frappe -c "bench get-app hrms --branch version-15" \
     && echo "-> Rebuilding bench" \
-    && su $systemUser -c "bench build" \
-    && su $systemUser -c "cp -r /home/$systemUser/$benchFolderName/sites /home/$systemUser/$benchFolderName/built_sites"
+    && su frappe -c "bench build" \
+    && su frappe -c "cp -r /home/frappe/bench/sites /home/frappe/bench/built_sites"
 
 COPY --chown=$systemUser --chmod=0755 /railway/railway-setup.sh /home/$systemUser/$benchFolderName/railway-setup.sh
 COPY --chown=$systemUser --chmod=0755 /railway/railway-entrypoint.sh /usr/local/bin/railway-entrypoint.sh
