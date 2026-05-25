@@ -3,6 +3,11 @@ FROM frappe/bench:v5.29.0
 # frappe/bench use debian:bookworm-slim as a base image
 # then it install dependencies for bench (python, nodejs)
 
+USER frappe
+WORKDIR /home/frappe/bench
+RUN bench get-app hrms --branch version-15
+USER root
+
 ###############################################
 # ARG
 ###############################################
