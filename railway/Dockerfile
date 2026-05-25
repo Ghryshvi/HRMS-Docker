@@ -11,6 +11,12 @@ FROM pipech/erpnext-docker-debian:version-15-latest AS builder
 USER $systemUser
 WORKDIR /home/$systemUser/$benchFolderName
 
+&& rm /etc/nginx/sites-enabled/default \
+&& echo "-> Install HRMS" \
+&& su frappe -c "bench get-app hrms --branch version-15" \
+&& echo "-> Rebuilding bench" \
+&& su frappe -c "bench build" \
+
 RUN echo "-> Start builder" \
     ### remove unused sites, created by base image
     && rm -rf /home/$systemUser/$benchFolderName/sites/site1.local \
