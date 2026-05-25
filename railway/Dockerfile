@@ -11,12 +11,6 @@ FROM pipech/erpnext-docker-debian:version-15-latest AS builder
 USER $systemUser
 WORKDIR /home/$systemUser/$benchFolderName
 
-&& rm /etc/nginx/sites-enabled/default \
-&& echo "-> Install HRMS" \
-&& su frappe -c "bench get-app hrms --branch version-15" \
-&& echo "-> Rebuilding bench" \
-&& su frappe -c "bench build" \
-
 RUN echo "-> Start builder" \
     ### remove unused sites, created by base image
     && rm -rf /home/$systemUser/$benchFolderName/sites/site1.local \
@@ -24,9 +18,9 @@ RUN echo "-> Start builder" \
     ### https://github.com/frappe/frappe/issues/33981
     && sed -i 's/socket\.AF_INET, socket\.SOCK_STREAM/socket.AF_INET6, socket.SOCK_STREAM/g' /home/frappe/bench/apps/frappe/frappe/utils/connections.py \
     ### install your custom apps here
-    # && bench get-app https://github.com/your-repo/custom_app
+    && echo "-> Install HRMS" \
+    && bench get-app hrms --branch version-15 \
     && echo "-> Builder done!"
-
 
 # ------------------------------------------
 # - Stage: 02 - production
@@ -64,8 +58,6 @@ RUN echo "-> Install nginx & supervisor" \
     && rm -rf /var/lib/apt/lists/* \
     && echo "-> Remove nginx default site" \
     && rm /etc/nginx/sites-enabled/default \
-    && echo "-> Install HRMS" \
-    && su frappe -c "bench get-app hrms --branch version-15" \
     && echo "-> Rebuilding bench" \
     && su frappe -c "bench build" \
     && su frappe -c "cp -r /home/frappe/bench/sites /home/frappe/bench/built_sites"
